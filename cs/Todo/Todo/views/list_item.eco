@@ -1,0 +1,25 @@
+<li <% if @done: %> class="completed" <% end %>
+    <% if @edit: %> class="editing" <% end %> >
+
+		<div class="view">
+        <input class="toggle" type="checkbox" <% if @done: %> checked <% end %>
+               data-subscribe='click : "<%= @id %>" | toggle_done@todo_list' />
+
+        <label data-subscribe='dbclick: "<%= @id %>" | edit_item@todo_list'
+            ><%= @value %></label>
+
+        <button class="destroy"
+                data-subscribe='click : "<%= @id %>" | remove_item@todo_list'>
+        </button>
+		</div>
+
+		<input 
+            <% if @edit: %> autofocus <% end %>
+            data-extend = "IKeyFilter"
+            data-subscribe =' focusout: getValue | set_item_val@todo_list "<%= @id %>"
+                            ; keyDown : get_key | check_key [13 27 32]
+                            ; onKeyPass 13 : getValue | set_item_val@todo_list "<%= @id %>"
+                            ; onKeyPass 27 : reset_editing@todo_list
+                            '
+            class="edit" value="<%= @value %>" />
+</li>

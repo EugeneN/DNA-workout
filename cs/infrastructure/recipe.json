@@ -1,0 +1,39 @@
+{
+    "abstract": {
+        "api_version": 4
+    },
+
+    "plainjs": [
+        "jquery-1.8.1.js"
+    ],
+
+    "deps": {
+        "jquery-dom-parser": [
+           "jquery-1.8.1.js"
+        ],
+        "dna": [
+            "libprotocol",
+            "libmonad",
+            "libmath",
+            "genome-parser",
+            "jquery-dom-parser"
+        ]
+    },
+
+    "realms": {
+        "default": [
+            {
+                "name": "dna",
+                "modules": [
+                    "jquery-1.8.1.js",
+                    "libprotocol",
+                    "libmonad",
+                    "libmath",
+                    "jquery-dom-parser",
+                    "genome-parser",
+                    "dna"
+                ]
+            }
+        ]
+    }
+}

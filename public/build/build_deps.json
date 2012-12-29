@@ -1,0 +1,22 @@
+{
+    "default": {
+        "core": [
+            {
+                "name": "infrastructure",
+                "deps": [],
+                "adaptor": {
+                    "type": "recipe"
+                }
+            },
+            {
+                "name": "Todo",
+                "deps": [
+                    null
+                ],
+                "adaptor": {
+                    "type": "csmodule"
+                }
+            }
+        ]
+    }
+}

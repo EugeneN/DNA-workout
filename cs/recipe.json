@@ -1,0 +1,23 @@
+{
+    "abstract": {
+        "api_version": 4
+    },
+
+
+
+    "deps": {
+
+        "Todo": ["infrastructure"]
+    },
+
+    "realms": {
+        "default": [
+            {
+                "name": "core",
+                "modules": [
+                    "Todo"
+                ]
+            }
+        ]
+    }
+}

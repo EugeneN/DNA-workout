@@ -1,0 +1,9 @@
+{
+    "build": {
+        "build": {
+            "app_root": "cs",
+            "build_root": "public"
+        },
+        "global": {}
+    }
+}

@@ -1,0 +1,25 @@
+fs = require 'fs'
+path = require 'path'
+CS = require 'coffee-script'
+
+ENC = 'utf8'
+
+SRC_DIR = path.resolve __dirname, 'src'
+
+
+build = ->
+    compile_cs_file = (fn) ->
+        file = fs.readFileSync(path.resolve SRC_DIR, fn).toString()
+        {filename: fn, source: CS.compile file}
+
+    source_files = fs.readdirSync SRC_DIR
+
+    ret_result =
+        sources: (source_files.map compile_cs_file)
+        dependencies: []
+
+task 'cafebuild', 'build with cafe', ->
+    process.send JSON.stringify build()
+
+task 'build', 'simple build', ->
+    console.log build()
