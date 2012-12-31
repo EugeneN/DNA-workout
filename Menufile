@@ -5,5 +5,13 @@
             "build_root": "public"
         },
         "global": {}
+    },
+    "fbuild": {
+        "build": {
+            "app_root": "cs",
+            "build_root": "public",
+            "f": true
+        },
+        "global": {}
     }
 }

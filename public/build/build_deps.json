@@ -2,7 +2,7 @@
     "default": {
         "core": [
             {
-                "name": "infrastructure",
+                "name": "lib",
                 "deps": [],
                 "adaptor": {
                     "type": "recipe"

@@ -7,7 +7,7 @@
 
     "deps": {
 
-        "Todo": ["infrastructure"]
+        "Todo": ["lib"]
     },
 
     "realms": {

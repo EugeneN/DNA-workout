@@ -22,10 +22,11 @@ JQueryKeyFilter = (node) ->
         #ev.keyCode
 
     check_key: (allowed_keys, key) ->
-        fire_onPpass(key) if key in (allowed_keys.map (i) -> i.value)
+        (fire_onPpass key) if key in (allowed_keys.map (i) -> i.value)
 
-    onKeyPass: ([keycode, f]) ->
-        event_handlers.onKeyPass.push (key) -> f() if key is keycode
+    onKeyPass: (keycode, f) ->
+        event_handlers.onKeyPass.push (key) ->
+            f() if key is keycode
 
 
 module.exports =

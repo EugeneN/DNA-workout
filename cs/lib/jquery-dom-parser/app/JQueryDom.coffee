@@ -16,17 +16,19 @@ IDom = [
     ['dbclick',       ['e']]
     ['focusout',      ['e']]
     ['focus',         []]
-    ['get_by_attr', ['attr']]
-    ['get_by_id', ['id']]
-    ['getData', ['attr', 'node']]
-    ['get_id', ['node']]
-    ['on_dom_ready', ['f']]
-    ['one', ['sel']]
-    ['document', []]
+    ['get_by_attr',   ['attr']]
+    ['get_by_id',     ['id']]
+    ['getData',       ['attr', 'node']]
+    ['get_id',        ['node']]
+    ['on_dom_ready',  ['f']]
+    ['one',           ['sel']]
+    ['document',      []]
     ['get_root_node', []]
+    ['add_event_listener', ['event_name', 'handler']]
 ]
 
 jqidom = (node) ->
+    node or= document.body
     jnode = jQuery node
 
     {
@@ -81,7 +83,7 @@ jqidom = (node) ->
             jnode.focus()
 
         get_by_attr: (attr) ->
-            jnode.find attr
+            (jnode.find attr).toArray()
 
         get_by_id: (id) -> jQuery "##{id}"
 
@@ -96,6 +98,9 @@ jqidom = (node) ->
         document: -> window.document
 
         get_root_node: -> node
+
+        add_event_listener: (event_name, handler) ->
+            node.addEventListener event_name, handler
 
     }
 
