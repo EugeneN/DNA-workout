@@ -40,6 +40,36 @@ maybe_m = ({is_error}) ->
     plus: (mvs...) ->
         first (drop_while is_error mvs)
 
+maybe_t = (inner) ->
+    result: (v) ->
+        inner.result (v)
+
+    bind: (mv, f) ->
+        if (is_error mv) then mv else (inner.bind mv, f)
+
+logger_m = (log_fn) ->
+    result: (v) ->
+        log_fn "Got value:", v
+        v
+
+    bind: (mv, f) ->
+        log_fn "Going to call f(mv):", f, mv
+        r = f mv
+        log_fn "Got result:", r
+
+logger_t = (inner, log_fn) ->
+    result: (v) ->
+        log_fn "Got value:", v
+        r = inner.result v
+        log_fn "Got inner monad's result value:", r
+        r
+
+    bind: (mv, f) ->
+        log_fn "Going to call f(mv):", f, mv
+        r = inner.bind mv, f
+        log_fn "Got result:", r
+        r
+
 cont_m = ->
     result: (v) ->
         (c) -> c v
@@ -84,9 +114,9 @@ cont_t = (inner) ->
 
 lift_sync = (arity, f) ->
     ''' Lifts a function:
-                f: arg1 -> ... -> argN
-        to a function:
-                f1: (arg1 -> ... -> argN) -> cont
+    f: arg1 -> ... -> argN
+    to a function:
+    f1: (arg1 -> ... -> argN) -> cont
     '''
     (args...) ->
         (c) ->
@@ -95,15 +125,23 @@ lift_sync = (arity, f) ->
 
 lift_async = (arity, f) ->
     ''' Lifts a function:
-                f: arg1 -> ... -> argN -> cb
-        to a function:
-                f1: (arg1 -> ... argN) -> cont
+    f: arg1 -> ... -> argN -> cb
+    to a function:
+    f1: (arg1 -> ... argN) -> cont
     '''
     (args...) ->
         (c) ->
             f (args[0...arity-1].concat [c])...
 
-module.exports = {domonad, identity_m, maybe_m, cont_m, cont_t, lift_sync, lift_async, is_null}
+module.exports = {
+domonad,
+identity_m,
+maybe_m, maybe_t,
+cont_m, cont_t,
+logger_m, logger_t,
+lift_sync, lift_async,
+is_null
+}
 
 #===============================================================================
 
@@ -130,7 +168,7 @@ is_sex = (v...) ->
     else
         v[0] is SEX
 
-e1 = (x) -> say 1; x * x
+e1 = (x, cb) -> settimeout(300, cb(x * x))
 e2 = (x) -> say 2; x + 2; SEX
 e3 = (x) -> say 3; x + 0.25
 

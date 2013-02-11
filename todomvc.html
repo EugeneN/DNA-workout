@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="utf-8">
     <title>DNA.js • TodoMVC</title>
@@ -37,6 +37,17 @@
             data-subscribe='click: clear_completed@todo_list'
             id="clear-completed">Clear completed</button>
     </footer>
+</section>
+
+<section id="vector_test">
+    <input id="val_a" type="text" placeholder="Value a" />
+    +
+    <input id="val_b" type="text" placeholder="Value b" />
+    =
+    <span data-subscribe='on_change@val_a, on_change@val_b : [getValueAsync@val_a getValue@val_b] | add | setText'>
+        ?
+    </span>
+
 </section>
 
 <footer id="info">

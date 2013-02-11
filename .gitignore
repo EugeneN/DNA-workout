@@ -3,3 +3,9 @@
 cs/build/*.js
 
 .idea/*
+
+/*/.cafe/*
+.cafe/**
+.cafe
+
+

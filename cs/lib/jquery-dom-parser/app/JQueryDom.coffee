@@ -5,6 +5,7 @@ IDom = [
     ['setValue',      ['new_value']]
     ['setText',       ['new_text']]
     ['getValue',      []]
+    ['getValueAsync',      ['cont'], 'async']
     ['alert',         ['msg']]
     ['click',         ['handler']]
     ['keyDown',       ['handler']]
@@ -25,6 +26,7 @@ IDom = [
     ['document',      []]
     ['get_root_node', []]
     ['add_event_listener', ['event_name', 'handler']]
+    ['on_change',     ['f']]
 ]
 
 jqidom = (node) ->
@@ -41,8 +43,15 @@ jqidom = (node) ->
         setText: (args...) ->
             jnode.text (args.join '')
 
-        getValue: () ->
+        getValue: ->
             jnode.val()
+
+        getValueAsync: (cont) ->
+            setTimeout(
+                -> cont jnode.val()
+                1000
+            )
+
 
         setAttr: (attr) ->
             say 'setattr'
@@ -101,6 +110,9 @@ jqidom = (node) ->
 
         add_event_listener: (event_name, handler) ->
             node.addEventListener event_name, handler
+
+        on_change: (f) ->
+            jnode.change f
 
     }
 

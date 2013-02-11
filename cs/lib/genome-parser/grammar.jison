@@ -123,15 +123,22 @@ symbol
         {{ $$ = { type: "number", value: parseInt($1, 10)}; }}
     | STRING
         {{ $$ = { type: "string", value: ($1).match('\"(\\.|[^\\"]*?)\"')[1] }; }}
-    | '[' item_list ']'
+    | '[' vec_items_list ']'
         {{ $$ = { type: "vector", value: $2}; }}
     ;
 
-item_list
+vec_items_list
     :
         {{ $$ = []; }}
+    | vec_item vec_items_list
+        {{ $$ = $1.concat($2) }}
+    ;
+
+vec_item
+    : partially_applied_handler
+        {{ $$ = [$1] }}
     | symbol
         {{ $$ = [$1]; }}
-    | item_list symbol
-        {{ $$ = $1.concat($2); }}
     ;
+
+
