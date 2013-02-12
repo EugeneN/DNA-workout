@@ -1,4 +1,4 @@
-say = (a...) -> console.log.apply console, a
+{info, warn, error, debug} = require 'console-logger'
 
 Implementations = {}
 Protocols = {}
@@ -20,7 +20,7 @@ get_default_protocols = ->
 
 register_protocol = (name, p) ->
     unless Protocols.hasOwnProperty p
-        say "Registering new protocol '#{name}'"
+        info "Registering new protocol '#{name}'"
         Protocols[name] = p
     else
         throw "Such protocol is already registered: '#{name}'"
@@ -47,9 +47,9 @@ register_protocol_impl = (protocol, impl) ->
         throw "Can't register implementation for an unknown protocol: '#{protocol}'"
 
     unless Implementations.hasOwnProperty protocol
-        say "Registering an implementation for the protocol '#{protocol}'"
+        info "Registering an implementation for the protocol '#{protocol}'"
     else
-        say "Redefining existing implementation of protocol '#{protocol}'"
+        info "Redefining existing implementation of protocol '#{protocol}'"
 
     Implementations[protocol] = impl
 
@@ -68,18 +68,18 @@ discover_impls = ->
             for protocol, impl of exports.protocols.implementations
                 register_protocol_impl protocol, impl
 
-dispatch_impl = (protocol, node, rest...) ->
+dispatch_impl = (protocol, opts=undefined) ->
     unless Protocols[protocol] and Implementations[protocol]
         discover_impls()
 
     if Implementations[protocol]
-        Implementations[protocol](node)
+        Implementations[protocol] opts
     else
         null
 
 
 dump_impls = ->
-    say "Currently registered implementations:", Implementations
+    info "Currently registered implementations:", Implementations
 
 
 module.exports = {

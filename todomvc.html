@@ -44,7 +44,11 @@
     +
     <input id="val_b" type="text" placeholder="Value b" />
     =
-    <span data-subscribe='on_change@val_a, on_change@val_b : "calculating..." | setText, [ getValueAsync@val_a getValue@val_b] | add | setText'>
+    <span data-subscribe='
+        on_change@val_a,
+        on_change@val_b : "calculating..." | setText,
+                                           [ getValueAsync@val_a getValue@val_b] | add | setText
+    '>
         ?
     </span>
 
@@ -57,18 +61,25 @@
 <script src="public/build/default/core.js"></script>
 <script>
     (function(root){
+        root.bootstrapper.ENV = {
+            LOG_INFO: true,
+            LOG_WARN: true,
+            LOG_ERROR: true,
+            LOG_DEBUG: true
+        };
+
         root.bootstrapper.init_queue = [
-            function () { console.log("Starting init queue"); },
-            function () { console.log("init queue done"); }
+            function () { console.log("**Starting init queue"); },
+            function () { console.log("**init queue done"); }
         ];
 
         root.bootstrapper.document_ready_queue = [
-            function () { console.log("Starting doc rdy queue"); },
+            function () { console.log("**Starting doc rdy queue"); },
             function () {
                 var dna = require('dna');
                 dna.start_synthesis();
             },
-            function () { console.log("doc rdy queue done"); }
+            function () { console.log("**doc rdy queue done"); }
         ];
 
         root.bootstrapper.run_init_queue();

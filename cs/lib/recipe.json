@@ -17,6 +17,9 @@
             "libmath",
             "genome-parser",
             "jquery-dom-parser"
+        ],
+        "console-logger": [
+            "libprotocol"
         ]
     },
 
@@ -29,6 +32,7 @@
                     "libprotocol",
                     "libmonad",
                     "libmath",
+                    "console-logger",
                     "jquery-dom-parser",
                     "genome-parser",
                     "dna"

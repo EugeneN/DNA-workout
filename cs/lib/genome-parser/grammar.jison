@@ -34,7 +34,7 @@ program
     :
     | text EOF
         {{
-           console.log($1);
+           //console.log($1);
            return $1;
         }}
     ;

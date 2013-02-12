@@ -1,33 +1,41 @@
 DEBUG = true
 
-DA_EXTEND = 'extend'
-DA_SUBSCRIBE = 'subscribe'
+DNA_EXTEND = 'extend'
+DNA_SUBSCRIBE = 'subscribe'
+DNA_ID_PREFIX = 'Z'
+STRING = 'string'
+NUMBER = 'number'
+VECTOR = 'vector'
+HASHMAP = 'hashmap'
+DNA_DATATYPES = [STRING, NUMBER, VECTOR, HASHMAP]
 THIS = 'this'
-DNA_DATATYPES = ['string', 'number', 'vector', 'hashmap']
 
-say = (a...) -> console.log a...
-saynull = ->
+partial = (f, partial_args...) -> (args...) -> f (partial_args.concat args)...
 
 parse_genome = (require 'genome-parser').parse
 
 {
-register_protocol_impl
-dispatch_impl
-get_protocol
-get_default_protocols
-is_async
-get_arity
+    register_protocol_impl
+    dispatch_impl
+    get_protocol
+    get_default_protocols
+    is_async
+    get_arity
 } = require 'libprotocol'
 
 {
-cont_t, cont_m,
-maybe_t, maybe_m,
-logger_t, logger_m,
-domonad, is_null,
-lift_sync, lift_async
+    cont_t, cont_m,
+    maybe_t, maybe_m,
+    logger_t, logger_m,
+    domonad, is_null,
+    lift_sync, lift_async
 } = require 'libmonad'
 
+{info, warn, error, debug} = dispatch_impl 'ILogger'
+
 CELLS = {}
+
+set = (var_, val) -> var_ = val
 
 is_array = (v) -> Array.isArray v
 
@@ -48,6 +56,7 @@ bool = (v) ->
         !!v
 
 async_map = (vector, cell, dom_parser, cont) =>
+    # FIXME
     res = []
     count = vector.length
     local_cont = (idx) ->
@@ -69,7 +78,7 @@ async_map = (vector, cell, dom_parser, cont) =>
             else
                 ((local_cont idx) h())
 
-default_handlers_cont = (args...) -> say "DNA monadic sequence finished with results:", args
+default_handlers_cont = (args...) -> info "DNA monadic sequence finished with results:", args
 
 is_data = (method) -> method.type in DNA_DATATYPES
 
@@ -81,12 +90,7 @@ lift = (h) ->
     else
         lift_sync h.arity, h
 
-compose2 = (f, g) ->
-    (args...) -> f g args...
-
-partial = (f, partial_args...) ->
-    (args...) ->
-        f (partial_args.concat args)...
+compose2 = (f, g) -> (args...) -> f g args...
 
 get_method_ns = (name, cell) ->
     method_invariants = cell.receptors[name]
@@ -95,7 +99,7 @@ get_method_ns = (name, cell) ->
         method_invariants[0].ns
 
     else
-        say "No such method: #{name} in the cell:", cell
+        error "No such method: #{name} in the cell:", cell
         throw "Method missing in cell"
 
 dispatch_handler = (ns, name, cell) ->
@@ -110,16 +114,16 @@ dispatch_handler = (ns, name, cell) ->
         if handler
             handler
         else
-            say "Handler missing", {ns, name, cell}
+            error "Handler missing", {ns, name, cell}
             throw "Handler missing"
     else
-        say "Handler missing", {ns, name, cell}
+        error "Handler missing", {ns, name, cell}
         throw "Handler missing"
 
 synthesize_cell = (node, protocols, dom_parser) ->
     unless node.id
-        # id must not start with a digit (or the grammar has to be updated)
-        node.id = (dom_parser.get_id node) or 'Z' + Math.uuid().replace(/-/g, '_')
+        # id must start with a word char (or the grammar has to be updated)
+        node.id = (dom_parser.get_id node) or DNA_ID_PREFIX + Math.uuid().replace(/-/g, '_')
 
     proto_cell =
         id: node.id
@@ -178,25 +182,24 @@ get_create_cell_by_id = (id, dom_parser) ->
 
 dispatch_handler_fn = (ns, method, cell, dom_parser) ->
     switch method.type
-        when 'string'
-            impl: -> method.value
+        when STRING
+            {impl: -> method.value}
 
-        when 'number'
-            impl: -> method.value
+        when NUMBER
+            {impl: -> method.value}
 
-        when 'vector'
+        when VECTOR
             vector_handler = (cont) ->
                 async_map method.value, cell, dom_parser, (res) ->
-                    # FIXME
                     cont res
 
             vector_handler.async = true
             vector_handler.arity = 1
 
-            impl: vector_handler
+            {impl: vector_handler}
 
-        when 'hashmap'
-            impl: (key) -> if key then method.value[key] else method.value
+        when HASHMAP
+            {impl: (key) -> if key then method.value[key] else method.value}
 
         else dispatch_handler ns?.name, method.name, cell
 
@@ -222,7 +225,7 @@ parse_ast_handler_node = (handler, current_cell, dom_parser) ->
         null
 
     unless cell
-        say "Unknown cell referenced in handler", cell_id, handler
+        error "Unknown cell referenced in handler", cell_id, handler
         throw "Unknown cell referenced in handler"
 
     handler_fn = (dispatch_handler_fn ns, method, cell, dom_parser).impl
@@ -238,8 +241,8 @@ parse_ast_handler_node = (handler, current_cell, dom_parser) ->
     {impl: real_handler}
 
 make_extended_node = (dom_parser, node) ->
-    protocols = ((dom_parser.getData DA_EXTEND, node).split " ").filter (i) -> !!i
-    say "Protocols found for", node, ":", protocols
+    protocols = ((dom_parser.getData DNA_EXTEND, node).split " ").filter (i) -> !!i
+    info "Protocols found for", node, ":", protocols
 
     save_cell (synthesize_cell node, protocols, dom_parser)
 
@@ -247,10 +250,10 @@ make_monadized_handler = (dom_parser, cell, handlr) ->
     handlers_ast_list = if is_array handlr then handlr else [handlr]
     ast_parser = (h) -> (parse_ast_handler_node h, cell, dom_parser).impl
     lifted_handlers_chain = handlers_ast_list.map (compose2 lift, ast_parser)
-    wrapper_monad = cont_t (logger_t (maybe_m {is_error: is_null}), say)
+    wrapper_monad = cont_t (logger_t (maybe_m {is_error: is_null}), debug)
 
     (init_val) ->
-        say "Starting DNA monadic sequence with arguments:", init_val
+        info "Starting DNA monadic sequence with arguments:", init_val
         (domonad wrapper_monad, lifted_handlers_chain, init_val) default_handlers_cont
 
 interpose_handlers_with_events = (dom_parser, cell, handlers, evs_args) ->
@@ -260,37 +263,39 @@ interpose_handlers_with_events = (dom_parser, cell, handlers, evs_args) ->
     handlers.map (handlr) ->
         # TBD delegate this later
         (dispatch_handler ns?.name,
-        event.name,
-        (find_cell (scope?.name or THIS), cell, dom_parser)).impl (args.concat [handlr])...
+                          event.name,
+                          (find_cell (scope?.name or THIS),
+                                     cell,
+                                     dom_parser)).impl (args.concat [handlr])...
 
 make_subscribed_node = (dom_parser, node) ->
     cell = get_create_cell node.id, node, dom_parser
 
-    dna_sequences = parse_genome (dom_parser.getData DA_SUBSCRIBE, cell.node)
-    say "DNA AST for", cell, ":", dna_sequences
+    dna_sequences = parse_genome (dom_parser.getData DNA_SUBSCRIBE, cell.node)
+    info "DNA AST for", cell, ":", dna_sequences
 
 
     dna_sequences.map (dna_seq) ->
         dna_seq.events.map (partial interpose_handlers_with_events,
-        dom_parser,
-        cell,
-        (dna_seq.handlers.map (partial make_monadized_handler,
-        dom_parser,
-        cell)))
+                                    dom_parser,
+                                    cell,
+                                    (dna_seq.handlers.map (partial make_monadized_handler,
+                                                                   dom_parser,
+                                                                   cell)))
 
 synthesize_node = (dom_parser) ->
     START_TIME = new Date
 
     root_node = dom_parser.get_root_node()
-    say 'Cells synthesis started for node', root_node
+    info 'Cells synthesis started for node', root_node
 
-    extended_nodes = dom_parser.get_by_attr "[data-#{DA_EXTEND}]"
-    subscribed_nodes = dom_parser.get_by_attr "[data-#{DA_SUBSCRIBE}]"
+    extended_nodes = dom_parser.get_by_attr "[data-#{DNA_EXTEND}]"
+    subscribed_nodes = dom_parser.get_by_attr "[data-#{DNA_SUBSCRIBE}]"
 
     extended_nodes.map (partial make_extended_node, dom_parser)
     subscribed_nodes.map (partial make_subscribed_node, dom_parser)
 
-    say "Cells synthesis completed in #{new Date - START_TIME}ms."
+    info "Cells synthesis completed in #{new Date - START_TIME}ms."
 
 module.exports =
 # Entry point
@@ -307,4 +312,4 @@ module.exports =
         synthesize_node root_idom
 
     dump_cells: ->
-        say 'Cells synthesized for this document:', CELLS
+        info 'Cells synthesized for this document:', CELLS
