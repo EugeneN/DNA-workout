@@ -10,8 +10,8 @@ logger_proto = [
     ['debug',   [], 'varargs']
 ]
 
-say = (a...) -> console.log a...
-read_env = (key) -> ENV[key]
+say = (a...) -> console?.log a...
+read_env = (key) -> ENV?[key]
 log = (flag, prefix, msg...) -> say (["[#{prefix}]"].concat msg)... if (read_env flag) is true
 
 info = partial log, 'LOG_INFO', 'INFO'
