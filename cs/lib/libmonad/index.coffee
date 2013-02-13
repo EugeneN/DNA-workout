@@ -134,59 +134,59 @@ lift_async = (arity, f) ->
             f (args[0...arity-1].concat [c])...
 
 module.exports = {
-domonad,
-identity_m,
-maybe_m, maybe_t,
-cont_m, cont_t,
-logger_m, logger_t,
-lift_sync, lift_async,
-is_null
+    domonad,
+    identity_m,
+    maybe_m, maybe_t,
+    cont_m, cont_t,
+    logger_m, logger_t,
+    lift_sync, lift_async,
+    is_null
 }
 
 #===============================================================================
 
-say = (m...) -> console.log m...
-
-log_result = (x...) -> say x...
-
-run = (c) -> c log_result
-
-lift_sync1 = (f, delay) ->
-    (x) ->
-        (c) ->
-            setTimeout(
-                -> c (f x)
-                delay
-            )
-
-
-SEX = 'sex'
-is_sex = (v...) ->
-    if v.length is 0
-        # special case: returning error literal when called without params
-        SEX
-    else
-        v[0] is SEX
-
-e1 = (x, cb) -> settimeout(300, cb(x * x))
-e2 = (x) -> say 2; x + 2; SEX
-e3 = (x) -> say 3; x + 0.25
-
-f1 = lift_sync1 e1, 100
-f2 = lift_sync1 e2, 200
-f3 = lift_sync1 e3, 300
-
-#z = bind (bind (bind (result 3), f1), f2), f3
-
-y = domonad cont_m(), [f1, f2, f3, f1], 33
-
-cont_maybe = cont_t (maybe_m {is_error: is_sex})
-u = domonad cont_maybe, [f1, f2, f3], 33
-
-#say u
-#u say
-
-#cont_identity = cont_t identity_m()
-#v = domonad cont_identity, [f1, f2, f3], 33
-
-#v say
+#say = (m...) -> console.log m...
+#
+#log_result = (x...) -> say x...
+#
+#run = (c) -> c log_result
+#
+#lift_sync1 = (f, delay) ->
+#    (x) ->
+#        (c) ->
+#            setTimeout(
+#                -> c (f x)
+#                delay
+#            )
+#
+#
+#SEX = 'sex'
+#is_sex = (v...) ->
+#    if v.length is 0
+#        # special case: returning error literal when called without params
+#        SEX
+#    else
+#        v[0] is SEX
+#
+#e1 = (x, cb) -> settimeout(300, cb(x * x))
+#e2 = (x) -> say 2; x + 2; SEX
+#e3 = (x) -> say 3; x + 0.25
+#
+#f1 = lift_sync1 e1, 100
+#f2 = lift_sync1 e2, 200
+#f3 = lift_sync1 e3, 300
+#
+##z = bind (bind (bind (result 3), f1), f2), f3
+#
+#y = domonad cont_m(), [f1, f2, f3, f1], 33
+#
+#cont_maybe = cont_t (maybe_m {is_error: is_sex})
+#u = domonad cont_maybe, [f1, f2, f3], 33
+#
+##say u
+##u say
+#
+##cont_identity = cont_t identity_m()
+##v = domonad cont_identity, [f1, f2, f3], 33
+#
+##v say

@@ -4,6 +4,8 @@
 \s+                    /* skip whitespace */
 [0-9]+                 return 'NUMBER'
 \"(\\.|[^\\"]*?)\"     return 'STRING'
+"NaN"                  return 'NAN'
+"null"                 return 'NULL'
 [A-Za-z_][A-Za-z0-9_]* return 'IDENTIFIER'
 \"                     return 'DBLQUOTE'
 "("                    return '('
@@ -117,7 +119,11 @@ partially_applied_handler
     ;
 
 symbol
-    : IDENTIFIER
+    : NAN
+        {{ $$ = { type: "NaN", value: NaN }; }}
+    | NULL
+        {{ $$ = { type: "null", value: null }; }}
+    | IDENTIFIER
         {{ $$ = { type: "symbol", name: $1 }; }}
     | NUMBER
         {{ $$ = { type: "number", value: parseInt($1, 10)}; }}

@@ -7,7 +7,9 @@ STRING = 'string'
 NUMBER = 'number'
 VECTOR = 'vector'
 HASHMAP = 'hashmap'
-DNA_DATATYPES = [STRING, NUMBER, VECTOR, HASHMAP]
+NAN = 'NaN'
+NULL = 'null'
+DNA_DATATYPES = [STRING, NUMBER, VECTOR, HASHMAP, NAN, NULL]
 THIS = 'this'
 
 partial = (f, partial_args...) -> (args...) -> f (partial_args.concat args)...
@@ -201,7 +203,28 @@ dispatch_handler_fn = (ns, method, cell, dom_parser) ->
         when HASHMAP
             {impl: (key) -> if key then method.value[key] else method.value}
 
+        when NAN
+            {impl: -> NaN}
+
+        when NULL
+            {impl: -> null}
+
         else dispatch_handler ns?.name, method.name, cell
+
+dna_to_host_value = (ast_node) ->
+    proto_val = ast_node.method or ast_node
+
+    if proto_val.type
+        switch proto_val.type
+            when VECTOR
+                proto_val.value.map (i) -> dna_to_host_value i
+            when HASHMAP
+                throw "Not implemented" # TODO
+            else
+                proto_val.value
+
+    else
+        throw "Unexpected datatype received"
 
 parse_ast_handler_node = (handler, current_cell, dom_parser) ->
     {ns, method, scope} = if is_array handler then handler[0] else handler
@@ -231,7 +254,7 @@ parse_ast_handler_node = (handler, current_cell, dom_parser) ->
     handler_fn = (dispatch_handler_fn ns, method, cell, dom_parser).impl
 
     real_handler = if is_array handler
-        partial handler_fn, (handler[1...].map (i) -> i.method.value)...
+        partial handler_fn, (handler[1...].map dna_to_host_value)...
     else
         handler_fn
 
