@@ -1,7 +1,7 @@
 bootstrapper = require 'bootstrapper'
 ENV = bootstrapper.ENV
 
-partial = (f, partial_args...) -> (args...) -> f (partial_args.concat args)...
+{partial} = require 'libprotein'
 
 logger_proto = [
     ['info',    [], 'varargs']
@@ -14,8 +14,8 @@ say = (a...) -> console?.log a...
 read_env = (key) -> ENV?[key]
 log = (flag, prefix, msg...) -> say (["[#{prefix}]"].concat msg)... if (read_env flag) is true
 
-info = partial log, 'LOG_INFO', 'INFO'
-warn = partial log, 'LOG_WARN', 'WARN'
+info =  partial log, 'LOG_INFO',  'INFO'
+warn =  partial log, 'LOG_WARN',  'WARN'
 error = partial log, 'LOG_ERROR', 'ERROR'
 debug = partial log, 'LOG_DEBUG', 'DEBUG'
 

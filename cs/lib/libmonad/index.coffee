@@ -1,12 +1,6 @@
 # http://jsfiddle.net/n6GHF/10/
 
-identity = (x) -> x
-
-first = (s) -> s[0]
-
-drop_while = (f, s) ->
-    for i in s
-        return i unless (f i)
+{identity, first, drop_while, is_function} = require 'libprotein'
 
 is_null = (v...) ->
     if v.length is 0
@@ -14,8 +8,6 @@ is_null = (v...) ->
         null
     else
         v[0] is null
-
-is_function = (v) -> typeof v is 'function'
 
 domonad = ({result, bind}, functions, init_value) ->
     f0 = bind (result init_value), functions[0]

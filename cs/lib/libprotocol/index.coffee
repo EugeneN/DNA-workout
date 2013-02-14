@@ -4,7 +4,9 @@ Implementations = {}
 Protocols = {}
 THIS = 'this'
 
-DEFAULT_PROTOCOLS = ['IDom', 'IMath']
+DEFAULT_PROTOCOLS = ['IDom', 'INucleus']
+
+{partial} = require 'libprotein'
 
 
 get_protocol = (p) ->
@@ -13,10 +15,7 @@ get_protocol = (p) ->
     else
         throw "No such registered protocol: '#{p}'"
 
-
-get_default_protocols = ->
-    DEFAULT_PROTOCOLS
-
+get_default_protocols = -> DEFAULT_PROTOCOLS
 
 register_protocol = (name, p) ->
     unless Protocols.hasOwnProperty p
@@ -25,22 +24,27 @@ register_protocol = (name, p) ->
     else
         throw "Such protocol is already registered: '#{name}'"
 
-
-is_async = (ns, method_name) ->
+get_method = (ns, method_name) ->
     m = Protocols[ns]?.filter ([mn]) -> mn is method_name
-    if m
-        [name, args, async] = m[0]
-        async is 'async'
+    if m.length is 1
+        m[0]
     else
-        null
+        error "No such method:", ns, method_name
+        throw "No such method"
+
+get_meta = (ns, method_name) ->
+    [_, _, meta...] = get_method ns, method_name
+    meta
+
+is_any = (prop, ns, method_name) -> prop in (get_meta ns, method_name)
+
+is_async = partial is_any, 'async'
+
+is_vararg = partial is_any, 'vararg'
 
 get_arity = (ns, method_name) ->
-    m = Protocols[ns]?.filter ([mn]) -> mn is method_name
-    if m
-        [name, argums, async] = m[0]
-        argums.length
-    else
-        throw "Arity requested for unknown method #{ns}/#{method_name}"
+    [_, argums, _...] = get_method ns, method_name
+    argums.length
 
 register_protocol_impl = (protocol, impl) ->
     unless get_protocol protocol
@@ -90,6 +94,7 @@ module.exports = {
     dispatch_impl
     dump_impls
     is_async
+    is_vararg
     get_arity
     discover_impls
 }

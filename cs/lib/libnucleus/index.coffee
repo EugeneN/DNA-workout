@@ -6,7 +6,7 @@ _isNaN = (v) -> v isnt v
 module.exports =
     protocols:
         definitions:
-            IMath: [
+            INucleus: [
                 ['len', ['array']]
                 ['add', ['vector']]
                 ['drop', ['items_vec', 'cur_item']]
@@ -14,7 +14,7 @@ module.exports =
             ]
 
         implementations:
-            IMath: (node) ->
+            INucleus: (node) ->
                 len: (array) -> array.length or 0
 
                 add: (vec) ->

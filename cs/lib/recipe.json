@@ -14,12 +14,15 @@
         "dna": [
             "libprotocol",
             "libmonad",
-            "libmath",
+            "libnucleus",
             "genome-parser",
             "jquery-dom-parser"
         ],
         "console-logger": [
             "libprotocol"
+        ],
+        "jquery-1.8.1.js": [
+            "libprotein"
         ]
     },
 
@@ -29,9 +32,10 @@
                 "name": "dna",
                 "modules": [
                     "jquery-1.8.1.js",
+                    "libpartial",
                     "libprotocol",
                     "libmonad",
-                    "libmath",
+                    "libnucleus",
                     "console-logger",
                     "jquery-dom-parser",
                     "genome-parser",

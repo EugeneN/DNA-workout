@@ -12,7 +12,7 @@ NULL = 'null'
 DNA_DATATYPES = [STRING, NUMBER, VECTOR, HASHMAP, NAN, NULL]
 THIS = 'this'
 
-partial = (f, partial_args...) -> (args...) -> f (partial_args.concat args)...
+{partial, is_array, is_object, bool, complement, compose2} = require 'libprotein'
 
 parse_genome = (require 'genome-parser').parse
 
@@ -37,27 +37,7 @@ parse_genome = (require 'genome-parser').parse
 
 CELLS = {}
 
-set = (var_, val) -> var_ = val
-
-is_array = (v) -> Array.isArray v
-
-is_object = (v) ->
-    # FIXME
-    if is_array v
-        false
-    else
-        v instanceof {}.constructor
-
-bool = (v) ->
-    # FIXME
-    if (is_array v)
-        !!v.length
-    else if (is_object v)
-        !!(Object.keys(v).length)
-    else
-        !!v
-
-async_map = (vector, cell, dom_parser, cont) =>
+process_vector = (vector, cell, dom_parser, cont) =>
     # FIXME
     res = []
     count = vector.length
@@ -84,15 +64,13 @@ default_handlers_cont = (args...) -> info "DNA monadic sequence finished with re
 
 is_data = (method) -> method.type in DNA_DATATYPES
 
-is_handler = (method) -> not (is_data method)
+is_handler = complement is_data
 
 lift = (h) ->
     if h.async
         lift_async h.arity, h
     else
         lift_sync h.arity, h
-
-compose2 = (f, g) -> (args...) -> f g args...
 
 get_method_ns = (name, cell) ->
     method_invariants = cell.receptors[name]
@@ -133,7 +111,7 @@ synthesize_cell = (node, protocols, dom_parser) ->
         receptors: {}
         impls: {}
 
-    # Protocols must be unique. This must be validated on the registration step.
+    # Protocols must be unique. This must be validated at the registration step.
     all_the_protocols = _.uniq (protocols.concat get_default_protocols())
 
     all_the_protocols.map (protocol) ->
@@ -192,7 +170,7 @@ dispatch_handler_fn = (ns, method, cell, dom_parser) ->
 
         when VECTOR
             vector_handler = (cont) ->
-                async_map method.value, cell, dom_parser, (res) ->
+                process_vector method.value, cell, dom_parser, (res) ->
                     cont res
 
             vector_handler.async = true
@@ -296,7 +274,6 @@ make_subscribed_node = (dom_parser, node) ->
 
     dna_sequences = parse_genome (dom_parser.getData DNA_SUBSCRIBE, cell.node)
     info "DNA AST for", cell, ":", dna_sequences
-
 
     dna_sequences.map (dna_seq) ->
         dna_seq.events.map (partial interpose_handlers_with_events,
