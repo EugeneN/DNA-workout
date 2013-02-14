@@ -20,6 +20,22 @@ identity_m = ->
 
     bind: (mv, f) -> f mv
 
+# monadic value for error monad - vector [err, value]
+OK = undefined
+is_error = ([err, val]) -> err isnt OK
+
+error_m = ->
+    result: (v) -> [OK, v]
+
+    bind: (mv, f) ->
+        if (is_error mv) then mv else (f mv[1])
+
+error_t = (inner) ->
+    result: (v) ->
+        [OK, (inner.result v)]
+
+    bind: (mv, f) ->
+        if (is_error mv) then mv else (inner.bind mv[1], f)
 
 maybe_m = ({is_error}) ->
     zero: -> is_error() #?
@@ -32,9 +48,9 @@ maybe_m = ({is_error}) ->
     plus: (mvs...) ->
         first (drop_while is_error mvs)
 
-maybe_t = (inner) ->
+maybe_t = ({inner, is_error}) ->
     result: (v) ->
-        inner.result (v)
+        inner.result v
 
     bind: (mv, f) ->
         if (is_error mv) then mv else (inner.bind mv, f)
@@ -129,6 +145,7 @@ module.exports = {
     domonad,
     identity_m,
     maybe_m, maybe_t,
+    error_m, error_t,
     cont_m, cont_t,
     logger_m, logger_t,
     lift_sync, lift_async,
